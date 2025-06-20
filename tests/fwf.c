@@ -1,18 +1,14 @@
 
 #include <getopt.h>
-#include <string.h>
 
 #include "fwf.h"
 #include "txix.h"
 #include "mmes.h"
+#include "ddsn.h"
 
-typedef int (FWFParser)(FWFRow*, PDFPage*);
+static int pdf_parse_file(char* file, PDFParser* p) {
 
-static int fwf_parse_file(char* file, FWFParser* p) {
-
-    PDFPage* page = NULL;
     PDFFile* pdf = PDF_FILE_INIT();
-    FWFRow* fwf = FWF_ROW_AUTO(stdout);
 
     if (pdf_read_file(pdf, file) != PDF_OK) {
 
@@ -22,7 +18,7 @@ static int fwf_parse_file(char* file, FWFParser* p) {
 
     } else {
 
-        while (pdf_next_page(pdf, &page) == PDF_OK) { p(fwf, page); }
+        p(pdf, stdout);
         PDF_FILE_FREE(pdf);
         return EXIT_SUCCESS;
 
@@ -32,7 +28,7 @@ static int fwf_parse_file(char* file, FWFParser* p) {
 
 int main(int argc, char** argv) {
 
-    FWFParser* p = NULL;
+    PDFParser* p = NULL;
     int opt = 0;
 
     while ((opt = getopt(argc, argv, "p:")) != -1) {
@@ -42,8 +38,9 @@ int main(int argc, char** argv) {
         case 'p':
 
             if      (strlen(optarg) < 4) { }
-            else if (memcmp(optarg, "txix", 4) == 0) { p = fwf_parse_txix; }
-            else if (memcmp(optarg, "mmes", 4) == 0) { p = fwf_parse_mmes; }
+            else if (memcmp(optarg, "txix", 4) == 0) { p = txix_parse_file; }
+            else if (memcmp(optarg, "mmes", 4) == 0) { p = mmes_parse_file; }
+            else if (memcmp(optarg, "ddsn", 4) == 0) { p = ddsn_parse_file; }
             break;
 
         default:
@@ -64,6 +61,6 @@ int main(int argc, char** argv) {
         printf("missing input file\n");
         return EXIT_FAILURE;
 
-    } else { return fwf_parse_file(argv[optind], p); }
+    } else { return pdf_parse_file(argv[optind], p); }
 
 }

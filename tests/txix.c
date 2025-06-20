@@ -1,175 +1,169 @@
 
-#include <stdint.h>
-#include <string.h>
-
 #include "txix.h"
 
-//* max 8 fields in a single line
-//* mostly to reduce/limit array size
-#define FORMAT_SIZE 8
-#define FWF_END { (FWF_COL_ZZZ << 8) + 0xff }
+#define TXIX_END { (TXIX_COL_ZZZ << 8) + 0xff }
 
-#define FWF_FORMAT_HEAD_BPR_1 FWF_END
-#define FWF_FORMAT_HEAD_BPR_2 FWF_END
-#define FWF_FORMAT_HEAD_BPR_3               \
-{                                           \
-    (FWF_COL_BPR_PAYER        << 8) + 0x0a, \
-    (FWF_COL_ZZZ              << 8) + 0xff, \
+#define TXIX_FMT_HEAD_BPR_1 TXIX_END
+#define TXIX_FMT_HEAD_BPR_2 TXIX_END
+#define TXIX_FMT_HEAD_BPR_3                  \
+{                                            \
+    (TXIX_COL_BPR_PAYER        << 8) + 0x0a, \
+    (TXIX_COL_ZZZ              << 8) + 0xff, \
 }
 
-#define FWF_FORMAT_HEAD_BPR_4 FWF_END
-#define FWF_FORMAT_HEAD_BPR_5               \
-{                                           \
-    (FWF_COL_BPR_PAYEE        << 8) + 0x76, \
-    (FWF_COL_ZZZ              << 8) + 0xff, \
+#define TXIX_FMT_HEAD_BPR_4 TXIX_END
+#define TXIX_FMT_HEAD_BPR_5                  \
+{                                            \
+    (TXIX_COL_BPR_PAYEE        << 8) + 0x76, \
+    (TXIX_COL_ZZZ              << 8) + 0xff, \
 }
 
-#define FWF_FORMAT_HEAD_BPR_6               \
-{                                           \
-    (FWF_COL_BPR_NPI          << 8) + 0x79, \
-    (FWF_COL_ZZZ              << 8) + 0xff, \
+#define TXIX_FMT_HEAD_BPR_6                  \
+{                                            \
+    (TXIX_COL_BPR_NPI          << 8) + 0x79, \
+    (TXIX_COL_ZZZ              << 8) + 0xff, \
 }
 
-#define FWF_FORMAT_HEAD_BPR_7               \
-{                                           \
-    (FWF_COL_BPR_CHECK_NUMBER << 8) + 0x79, \
-    (FWF_COL_ZZZ              << 8) + 0xff, \
+#define TXIX_FMT_HEAD_BPR_7                  \
+{                                            \
+    (TXIX_COL_BPR_CHECK_NUMBER << 8) + 0x79, \
+    (TXIX_COL_ZZZ              << 8) + 0xff, \
 }
 
-#define FWF_FORMAT_HEAD_BPR_8               \
-{                                           \
-    (FWF_COL_BPR_PAYMENT_DATE << 8) + 0x79, \
-    (FWF_COL_ZZZ              << 8) + 0xff, \
+#define TXIX_FMT_HEAD_BPR_8                  \
+{                                            \
+    (TXIX_COL_BPR_PAYMENT_DATE << 8) + 0x79, \
+    (TXIX_COL_ZZZ              << 8) + 0xff, \
 }
 
-#define FWF_FORMAT_HCAD_CLP_1               \
-{                                           \
-    (FWF_COL_CLP_PATIENT_NAME << 8) + 0x12, \
-    (FWF_COL_CLP_PATIENT_ID   << 8) + 0x45, \
-    (FWF_COL_ZZZ              << 8) + 0xff, \
+#define TXIX_FMT_HCAD_CLP_1                  \
+{                                            \
+    (TXIX_COL_CLP_PATIENT_NAME << 8) + 0x12, \
+    (TXIX_COL_CLP_PATIENT_ID   << 8) + 0x45, \
+    (TXIX_COL_ZZZ              << 8) + 0xff, \
 }
 
-#define FWF_FORMAT_HCAD_CLP_2               \
-{                                           \
-    (FWF_COL_CLP_ICN          << 8) + 0x00, \
-    (FWF_COL_CLP_PCN          << 8) + 0x0f, \
-    (FWF_COL_CLP_MRN          << 8) + 0x1c, \
-    (FWF_COL_SVC_DATE_FROM    << 8) + 0x2b, \
-    (FWF_COL_SVC_DATE_TO      << 8) + 0x32, \
-    (FWF_COL_SVC_BILLED_AMT   << 8) + 0x3d, \
-    (FWF_COL_SVC_PAID_AMT     << 8) + 0x6e, \
-    (FWF_COL_ZZZ              << 8) + 0xff, \
+#define TXIX_FMT_HCAD_CLP_2                  \
+{                                            \
+    (TXIX_COL_CLP_ICN          << 8) + 0x00, \
+    (TXIX_COL_CLP_PCN          << 8) + 0x0f, \
+    (TXIX_COL_CLP_MRN          << 8) + 0x1c, \
+    (TXIX_COL_SVC_DATE_FROM    << 8) + 0x2b, \
+    (TXIX_COL_SVC_DATE_TO      << 8) + 0x32, \
+    (TXIX_COL_SVC_BILLED_AMT   << 8) + 0x3d, \
+    (TXIX_COL_SVC_PAID_AMT     << 8) + 0x6e, \
+    (TXIX_COL_ZZZ              << 8) + 0xff, \
 }
 
-#define FWF_FORMAT_HCAD_CLP_3               \
-{                                           \
-    (FWF_COL_SVC_PROC_CD      << 8) + 0x00, \
-    (FWF_COL_SVC_MODIFIERS    << 8) + 0x08, \
-    (FWF_COL_SVC_ALLOW_UNITS  << 8) + 0x23, \
-    (FWF_COL_SVC_DETAIL_EOBS  << 8) + 0x23, \
-    (FWF_COL_SVC_ALLOW_AMT    << 8) + 0x3d, \
-    (FWF_COL_SVC_COPAY_AMT    << 8) + 0x5d, \
-    (FWF_COL_ZZZ              << 8) + 0xff, \
+#define TXIX_FMT_HCAD_CLP_3                  \
+{                                            \
+    (TXIX_COL_SVC_PROC_CD      << 8) + 0x00, \
+    (TXIX_COL_SVC_MODIFIERS    << 8) + 0x08, \
+    (TXIX_COL_SVC_ALLOW_UNITS  << 8) + 0x23, \
+    (TXIX_COL_SVC_DETAIL_EOBS  << 8) + 0x23, \
+    (TXIX_COL_SVC_ALLOW_AMT    << 8) + 0x3d, \
+    (TXIX_COL_SVC_COPAY_AMT    << 8) + 0x5d, \
+    (TXIX_COL_ZZZ              << 8) + 0xff, \
 }
 
-#define FWF_FORMAT_HCPD_CLP_1               \
-{                                           \
-    (FWF_COL_CLP_PATIENT_NAME << 8) + 0x12, \
-    (FWF_COL_CLP_PATIENT_ID   << 8) + 0x45, \
-    (FWF_COL_ZZZ              << 8) + 0xff, \
+#define TXIX_FMT_HCPD_CLP_1                  \
+{                                            \
+    (TXIX_COL_CLP_PATIENT_NAME << 8) + 0x12, \
+    (TXIX_COL_CLP_PATIENT_ID   << 8) + 0x45, \
+    (TXIX_COL_ZZZ              << 8) + 0xff, \
 }
 
-#define FWF_FORMAT_HCPD_CLP_2               \
-{                                           \
-    (FWF_COL_CLP_ICN          << 8) + 0x00, \
-    (FWF_COL_CLP_PCN          << 8) + 0x0f, \
-    (FWF_COL_CLP_MRN          << 8) + 0x1c, \
-    (FWF_COL_ZZZ              << 8) + 0xff, \
+#define TXIX_FMT_HCPD_CLP_2                  \
+{                                            \
+    (TXIX_COL_CLP_ICN          << 8) + 0x00, \
+    (TXIX_COL_CLP_PCN          << 8) + 0x0f, \
+    (TXIX_COL_CLP_MRN          << 8) + 0x1c, \
+    (TXIX_COL_ZZZ              << 8) + 0xff, \
 }
 
-#define FWF_FORMAT_HCPD_CLP_3 FWF_END
+#define TXIX_FMT_HCPD_CLP_3 TXIX_END
 
-#define FWF_FORMAT_HCPD_SVC_1               \
-{                                           \
-    (FWF_COL_SVC_PROC_CD      << 8) + 0x00, \
-    (FWF_COL_SVC_MODIFIERS    << 8) + 0x08, \
-    (FWF_COL_SVC_DATE_FROM    << 8) + 0x15, \
-    (FWF_COL_SVC_DATE_TO      << 8) + 0x1c, \
-    (FWF_COL_SVC_ALLOW_UNITS  << 8) + 0x23, \
-    (FWF_COL_SVC_DETAIL_EOBS  << 8) + 0x55, \
-    (FWF_COL_ZZZ              << 8) + 0xff, \
+#define TXIX_FMT_HCPD_SVC_1                  \
+{                                            \
+    (TXIX_COL_SVC_PROC_CD      << 8) + 0x00, \
+    (TXIX_COL_SVC_MODIFIERS    << 8) + 0x08, \
+    (TXIX_COL_SVC_DATE_FROM    << 8) + 0x15, \
+    (TXIX_COL_SVC_DATE_TO      << 8) + 0x1c, \
+    (TXIX_COL_SVC_ALLOW_UNITS  << 8) + 0x23, \
+    (TXIX_COL_SVC_DETAIL_EOBS  << 8) + 0x55, \
+    (TXIX_COL_ZZZ              << 8) + 0xff, \
 }
 
-#define FWF_FORMAT_HCPD_SVC_2               \
-{                                           \
-    (FWF_COL_SVC_COPAY_AMT    << 8) + 0x22, \
-    (FWF_COL_SVC_BILLED_AMT   << 8) + 0x2f, \
-    (FWF_COL_SVC_ALLOW_AMT    << 8) + 0x3c, \
-    (FWF_COL_SVC_PAID_AMT     << 8) + 0x49, \
-    (FWF_COL_ZZZ              << 8) + 0xff, \
+#define TXIX_FMT_HCPD_SVC_2                  \
+{                                            \
+    (TXIX_COL_SVC_COPAY_AMT    << 8) + 0x22, \
+    (TXIX_COL_SVC_BILLED_AMT   << 8) + 0x2f, \
+    (TXIX_COL_SVC_ALLOW_AMT    << 8) + 0x3c, \
+    (TXIX_COL_SVC_PAID_AMT     << 8) + 0x49, \
+    (TXIX_COL_ZZZ              << 8) + 0xff, \
 }
 
-#define FWF_FORMAT_HCDN_CLP_1               \
-{                                           \
-    (FWF_COL_CLP_PATIENT_NAME << 8) + 0x12, \
-    (FWF_COL_CLP_PATIENT_ID   << 8) + 0x42, \
-    (FWF_COL_ZZZ              << 8) + 0xff, \
+#define TXIX_FMT_HCDN_CLP_1                  \
+{                                            \
+    (TXIX_COL_CLP_PATIENT_NAME << 8) + 0x12, \
+    (TXIX_COL_CLP_PATIENT_ID   << 8) + 0x42, \
+    (TXIX_COL_ZZZ              << 8) + 0xff, \
 }
 
-#define FWF_FORMAT_HCDN_CLP_2               \
-{                                           \
-    (FWF_COL_CLP_ICN          << 8) + 0x00, \
-    (FWF_COL_CLP_PCN          << 8) + 0x0f, \
-    (FWF_COL_CLP_MRN          << 8) + 0x1c, \
-    (FWF_COL_ZZZ              << 8) + 0xff, \
+#define TXIX_FMT_HCDN_CLP_2                  \
+{                                            \
+    (TXIX_COL_CLP_ICN          << 8) + 0x00, \
+    (TXIX_COL_CLP_PCN          << 8) + 0x0f, \
+    (TXIX_COL_CLP_MRN          << 8) + 0x1c, \
+    (TXIX_COL_ZZZ              << 8) + 0xff, \
 }
 
-#define FWF_FORMAT_HCDN_SVC_1               \
-{                                           \
-    (FWF_COL_SVC_PROC_CD      << 8) + 0x00, \
-    (FWF_COL_SVC_MODIFIERS    << 8) + 0x08, \
-    (FWF_COL_SVC_ALLOW_UNITS  << 8) + 0x15, \
-    (FWF_COL_SVC_DATE_FROM    << 8) + 0x21, \
-    (FWF_COL_SVC_DATE_TO      << 8) + 0x28, \
-    (FWF_COL_SVC_DETAIL_EOBS  << 8) + 0x53, \
-    (FWF_COL_ZZZ              << 8) + 0xff, \
+#define TXIX_FMT_HCDN_SVC_1                  \
+{                                            \
+    (TXIX_COL_SVC_PROC_CD      << 8) + 0x00, \
+    (TXIX_COL_SVC_MODIFIERS    << 8) + 0x08, \
+    (TXIX_COL_SVC_ALLOW_UNITS  << 8) + 0x15, \
+    (TXIX_COL_SVC_DATE_FROM    << 8) + 0x21, \
+    (TXIX_COL_SVC_DATE_TO      << 8) + 0x28, \
+    (TXIX_COL_SVC_DETAIL_EOBS  << 8) + 0x53, \
+    (TXIX_COL_ZZZ              << 8) + 0xff, \
 }
 
-#define FWF_FORMAT_HCDN_SVC_2               \
-{                                           \
-    (FWF_COL_SVC_COPAY_AMT    << 8) + 0x38, \
-    (FWF_COL_SVC_ALLOW_AMT    << 8) + 0x38, \
-    (FWF_COL_SVC_PAID_AMT     << 8) + 0x38, \
-    (FWF_COL_SVC_BILLED_AMT   << 8) + 0x45, \
-    (FWF_COL_ZZZ              << 8) + 0xff, \
+#define TXIX_FMT_HCDN_SVC_2                  \
+{                                            \
+    (TXIX_COL_SVC_COPAY_AMT    << 8) + 0x38, \
+    (TXIX_COL_SVC_ALLOW_AMT    << 8) + 0x38, \
+    (TXIX_COL_SVC_PAID_AMT     << 8) + 0x38, \
+    (TXIX_COL_SVC_BILLED_AMT   << 8) + 0x45, \
+    (TXIX_COL_ZZZ              << 8) + 0xff, \
 }
 
-static const uint16_t fwf_col_format[][FORMAT_SIZE] = {
+static const uint16_t txix_col_format[][8] = {
 
-    [TXIX_HEAD_BPR_1] = FWF_FORMAT_HEAD_BPR_1,
-    [TXIX_HEAD_BPR_2] = FWF_FORMAT_HEAD_BPR_2,
-    [TXIX_HEAD_BPR_3] = FWF_FORMAT_HEAD_BPR_3,
-    [TXIX_HEAD_BPR_4] = FWF_FORMAT_HEAD_BPR_4,
-    [TXIX_HEAD_BPR_5] = FWF_FORMAT_HEAD_BPR_5,
-    [TXIX_HEAD_BPR_6] = FWF_FORMAT_HEAD_BPR_6,
-    [TXIX_HEAD_BPR_7] = FWF_FORMAT_HEAD_BPR_7,
-    [TXIX_HEAD_BPR_8] = FWF_FORMAT_HEAD_BPR_8,
-    [TXIX_HCAD_CLP_1] = FWF_FORMAT_HCAD_CLP_1,
-    [TXIX_HCAD_CLP_2] = FWF_FORMAT_HCAD_CLP_2,
-    [TXIX_HCAD_CLP_3] = FWF_FORMAT_HCAD_CLP_3,
-    [TXIX_HCPD_CLP_1] = FWF_FORMAT_HCPD_CLP_1,
-    [TXIX_HCPD_CLP_2] = FWF_FORMAT_HCPD_CLP_2,
-    [TXIX_HCPD_CLP_3] = FWF_FORMAT_HCPD_CLP_3,
-    [TXIX_HCPD_SVC_1] = FWF_FORMAT_HCPD_SVC_1,
-    [TXIX_HCPD_SVC_2] = FWF_FORMAT_HCPD_SVC_2,
-    [TXIX_HCDN_CLP_1] = FWF_FORMAT_HCDN_CLP_1,
-    [TXIX_HCDN_CLP_2] = FWF_FORMAT_HCDN_CLP_2,
-    [TXIX_HCDN_SVC_1] = FWF_FORMAT_HCDN_SVC_1,
-    [TXIX_HCDN_SVC_2] = FWF_FORMAT_HCDN_SVC_2,
+    [TXIX_HEAD_BPR_1] = TXIX_FMT_HEAD_BPR_1,
+    [TXIX_HEAD_BPR_2] = TXIX_FMT_HEAD_BPR_2,
+    [TXIX_HEAD_BPR_3] = TXIX_FMT_HEAD_BPR_3,
+    [TXIX_HEAD_BPR_4] = TXIX_FMT_HEAD_BPR_4,
+    [TXIX_HEAD_BPR_5] = TXIX_FMT_HEAD_BPR_5,
+    [TXIX_HEAD_BPR_6] = TXIX_FMT_HEAD_BPR_6,
+    [TXIX_HEAD_BPR_7] = TXIX_FMT_HEAD_BPR_7,
+    [TXIX_HEAD_BPR_8] = TXIX_FMT_HEAD_BPR_8,
+    [TXIX_HCAD_CLP_1] = TXIX_FMT_HCAD_CLP_1,
+    [TXIX_HCAD_CLP_2] = TXIX_FMT_HCAD_CLP_2,
+    [TXIX_HCAD_CLP_3] = TXIX_FMT_HCAD_CLP_3,
+    [TXIX_HCPD_CLP_1] = TXIX_FMT_HCPD_CLP_1,
+    [TXIX_HCPD_CLP_2] = TXIX_FMT_HCPD_CLP_2,
+    [TXIX_HCPD_CLP_3] = TXIX_FMT_HCPD_CLP_3,
+    [TXIX_HCPD_SVC_1] = TXIX_FMT_HCPD_SVC_1,
+    [TXIX_HCPD_SVC_2] = TXIX_FMT_HCPD_SVC_2,
+    [TXIX_HCDN_CLP_1] = TXIX_FMT_HCDN_CLP_1,
+    [TXIX_HCDN_CLP_2] = TXIX_FMT_HCDN_CLP_2,
+    [TXIX_HCDN_SVC_1] = TXIX_FMT_HCDN_SVC_1,
+    [TXIX_HCDN_SVC_2] = TXIX_FMT_HCDN_SVC_2,
 
 };
 
-static const uint8_t fwf_line_format[][FORMAT_SIZE] = {
+static const uint8_t txix_line_format[][8] = {
 
     [TXIX_HCAD_CLP_1] = { 0, 0,  81, 255,  16, ':',  67, ':' },
     [TXIX_HCAD_CLP_2] = { 0, 0, 122, 255,  72, ')', 121, ')' },
@@ -186,39 +180,41 @@ static const uint8_t fwf_line_format[][FORMAT_SIZE] = {
 
 };
 
-static void fwf_write_line(FWFRow* fwf, PDFLine* line, TXIXLine l) {
+static void txix_write_line(TXIXRow* row, PDFLine* line, TXIXLine l) {
 
-    const uint16_t* f = fwf_col_format[l];
+    const uint16_t* f = txix_col_format[l];
 
-    for (int i = 0; i < FORMAT_SIZE; i++) {
+    // each format must end with TXIX_COL_ZZZ
+    // or it's an infinite loop and will crash
+    for (int i = 0; ; i++) {
 
-        const FWFCol col = f[i] >> 8;
-        if (col == FWF_COL_ZZZ) { break; }
+        const TXIXCol col = f[i] >> 8;
+        if (col == TXIX_COL_ZZZ) { break; }
 
-        const uint8_t offset = fwf->offset[col];
-        const size_t n_bytes = fwf->offset[col + 1] - offset;
+        const uint8_t offset = row->offset[col];
+        const size_t n_bytes = row->offset[col + 1] - offset;
         const uint8_t* start = line->cursor + (f[i] & 0x00ff);
 
-        memcpy(fwf->buffer + offset, start, n_bytes);
+        memcpy(row->buffer + offset, start, n_bytes);
 
     }
 
-    if (!fwf_line_format[l][FWF_OUT]) { /* deferred fwrite */ }
-    else { fwrite(fwf->buffer, 1, FWF_ROW_SIZE, fwf->output); }
+    if (!txix_line_format[l][FWF_OUT]) { /* deferred fwrite */ }
+    else { fwrite(row->buffer, 1, TXIX_ROW_SIZE, row->output); }
 
 }
 
-static void fwf_parse_line(FWFRow* fwf, PDFLine* line, TXIXLine l) {
+static void txix_parse_line(TXIXRow* row, PDFLine* line, TXIXLine l) {
 
     for (; l < INT32_MAX; l++) {
 
-        const uint8_t* d = fwf_line_format[l];
+        const uint8_t* d = txix_line_format[l];
 
         if      (line->n_bytes < d[FWF_MIN])             { }
         else if (line->n_bytes > d[FWF_MAX])             { }
         else if (line->cursor[d[FWF_I01]] != d[FWF_C01]) { }
         else if (line->cursor[d[FWF_I02]] != d[FWF_C02]) { }
-        else    { return fwf_write_line(fwf, line, l); }
+        else    { return txix_write_line(row, line, l); }
 
         if      (d[FWF_FIN]) { break; }
 
@@ -226,7 +222,7 @@ static void fwf_parse_line(FWFRow* fwf, PDFLine* line, TXIXLine l) {
 
 }
 
-int fwf_parse_txix(FWFRow* fwf, PDFPage* page) {
+static int txix_parse_page(TXIXRow* row, PDFPage* page) {
 
     PDFLine* line = NULL;
 
@@ -243,14 +239,26 @@ int fwf_parse_txix(FWFRow* fwf, PDFPage* page) {
 
     for (TXIXLine h = TXIX_HEAD_BPR_1; h <= TXIX_HEAD_BPR_8; h++) {
 
-        if (fwf->header == 0) { fwf_write_line(fwf, line, h); }
+        if (row->header == 0) { txix_write_line(row, line, h); }
         if (pdf_next_line(page, &line) != PDF_OK) { return 1; }
 
     }
 
-    fwf->header = 1;
-    do { fwf_parse_line(fwf, line, l); }
+    row->header = 1;
+    do { txix_parse_line(row, line, l); }
     while (pdf_next_line(page, &line) == PDF_OK);
+
+    return 0;
+
+}
+
+int txix_parse_file(PDFFile* pdf, FILE* out) {
+
+    PDFPage* page = NULL;
+    TXIXRow* row = TXIX_ROW_AUTO(out);
+
+    while (pdf_next_page(pdf, &page) == PDF_OK)
+        txix_parse_page(row, page);
 
     return 0;
 
