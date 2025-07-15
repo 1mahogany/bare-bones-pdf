@@ -13,9 +13,12 @@ typedef enum {
     DDSN_LINE_BPR_1,
     DDSN_LINE_BPR_2,
     DDSN_LINE_BPR_3,
+    DDSN_LINE_BPR_4,
     DDSN_LINE_SVC_1,
     DDSN_LINE_SVC_2,
+    DDSN_LINE_SVC_3,
     DDSN_LINE_CLP_1,
+    DDSN_LINE_CLP_2,
     DDSN_LINE_ZZZ_1,
     
 } DDSNLine;
@@ -30,7 +33,9 @@ typedef enum {
     DDSN_COL_CLP_ICN,
     DDSN_COL_CLP_MRN,
     DDSN_COL_CLP_PATIENT_ID,
-    DDSN_COL_CLP_PATIENT_NAME,
+    DDSN_COL_CLP_FI,
+    DDSN_COL_CLP_MI,
+    DDSN_COL_CLP_LAST_NAME,
     DDSN_COL_SVC_DATE_FROM,
     DDSN_COL_SVC_DATE_TO,
     DDSN_COL_SVC_PROC_CD,
@@ -64,7 +69,9 @@ typedef struct {
         "ICN              "                 \
         "               "                   \
         "PATIENT_ID"                        \
-        "FIMILAST_NAME      "               \
+        "FI"                                \
+        "MI"                                \
+        "LAST_NAME      "                   \
         "FROM  "                            \
         "TO    "                            \
         "PROC  "                            \
@@ -85,7 +92,9 @@ typedef struct {
         [DDSN_COL_CLP_ICN]          = 0x39, \
         [DDSN_COL_CLP_MRN]          = 0x4a, \
         [DDSN_COL_CLP_PATIENT_ID]   = 0x59, \
-        [DDSN_COL_CLP_PATIENT_NAME] = 0x63, \
+        [DDSN_COL_CLP_FI]           = 0x63, \
+        [DDSN_COL_CLP_MI]           = 0x65, \
+        [DDSN_COL_CLP_LAST_NAME]    = 0x67, \
         [DDSN_COL_SVC_DATE_FROM]    = 0x76, \
         [DDSN_COL_SVC_DATE_TO]      = 0x7c, \
         [DDSN_COL_SVC_PROC_CD]      = 0x82, \

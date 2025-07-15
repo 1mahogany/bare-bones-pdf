@@ -19,12 +19,30 @@
     (DDSN_COL_ZZZ              << 8) + 0xff, \
 }
 
+#define DDSN_FMT_BPR_4                       \
+{                                            \
+    (DDSN_COL_ZZZ              << 8) + 0xff, \
+}
+
 #define DDSN_FMT_CLP_1                       \
 {                                            \
     (DDSN_COL_CLP_PCN          << 8) + 0x02, \
     (DDSN_COL_CLP_ICN          << 8) + 0x0c, \
     (DDSN_COL_CLP_PATIENT_ID   << 8) + 0x4a, \
-    (DDSN_COL_CLP_PATIENT_NAME << 8) + 0x55, \
+    (DDSN_COL_CLP_FI           << 8) + 0x55, \
+    (DDSN_COL_CLP_MI           << 8) + 0x57, \
+    (DDSN_COL_CLP_LAST_NAME    << 8) + 0x59, \
+    (DDSN_COL_ZZZ              << 8) + 0xff, \
+}
+
+#define DDSN_FMT_CLP_2                       \
+{                                            \
+    (DDSN_COL_CLP_PCN          << 8) + 0x02, \
+    (DDSN_COL_CLP_ICN          << 8) + 0x0c, \
+    (DDSN_COL_CLP_PATIENT_ID   << 8) + 0x48, \
+    (DDSN_COL_CLP_LAST_NAME    << 8) + 0x53, \
+    (DDSN_COL_CLP_FI           << 8) + 0x5d, \
+    (DDSN_COL_CLP_MI           << 8) + 0x5f, \
     (DDSN_COL_ZZZ              << 8) + 0xff, \
 }
 
@@ -48,14 +66,31 @@
     (DDSN_COL_ZZZ              << 8) + 0xff, \
 }
 
-static const uint16_t ddsn_col_format[][10] = {
+#define DDSN_FMT_SVC_3                       \
+{                                            \
+    (DDSN_COL_SVC_DATE_FROM    << 8) + 0x22, \
+    (DDSN_COL_SVC_DATE_TO      << 8) + 0x22, \
+    (DDSN_COL_SVC_PROC_CD      << 8) + 0x2c, \
+    (DDSN_COL_SVC_BILLED_AMT   << 8) + 0x33, \
+    (DDSN_COL_SVC_PAID_AMT     << 8) + 0x3d, \
+    (DDSN_COL_SVC_STS          << 8) + 0x46, \
+    (DDSN_COL_SVC_MOD          << 8) + 0x62, \
+    (DDSN_COL_SVC_ALLOW_AMT    << 8) + 0x6e, \
+    (DDSN_COL_SVC_COPAY_AMT    << 8) + 0x6e, \
+    (DDSN_COL_ZZZ              << 8) + 0xff, \
+}
 
+static const uint16_t ddsn_col_format[][10] = {
+    
     [DDSN_LINE_BPR_1] = DDSN_FMT_BPR_1,
     [DDSN_LINE_BPR_2] = DDSN_FMT_BPR_2,
     [DDSN_LINE_BPR_3] = DDSN_FMT_BPR_3,
+    [DDSN_LINE_BPR_4] = DDSN_FMT_BPR_4,
     [DDSN_LINE_CLP_1] = DDSN_FMT_CLP_1,
+    [DDSN_LINE_CLP_2] = DDSN_FMT_CLP_2,
     [DDSN_LINE_SVC_1] = DDSN_FMT_SVC_1,
     [DDSN_LINE_SVC_2] = DDSN_FMT_SVC_2,
+    [DDSN_LINE_SVC_3] = DDSN_FMT_SVC_3,
 
 };
 
@@ -64,9 +99,12 @@ static const uint8_t ddsn_line_format[][8] = {
     [DDSN_LINE_BPR_1] = { 0, 0, 133, 255,   2, '#',  37, '#' },
     [DDSN_LINE_BPR_2] = { 0, 0, 133, 255, 101, '/', 104, '/' },
     [DDSN_LINE_BPR_3] = { 1, 0, 133, 255,  59, '.',  72, ' ' },
+    [DDSN_LINE_BPR_4] = { 1, 0, 133, 255,  56, '.',  70, ' ' },
     [DDSN_LINE_CLP_1] = { 1, 0, 133, 255,  59, '.', 121, ' ' },
+    [DDSN_LINE_CLP_2] = { 1, 0, 133, 255,  56, '.',  34, ' ' },
     [DDSN_LINE_SVC_1] = { 0, 1, 133, 255,  59, '.', 121, '.' },
     [DDSN_LINE_SVC_2] = { 0, 0, 133, 255,  85, ' ',  91, ':' },
+    [DDSN_LINE_SVC_3] = { 0, 1, 133, 255,  56, '.',  72, ' ' },
 
 };
 
