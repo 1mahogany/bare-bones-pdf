@@ -164,6 +164,20 @@ static void mcd_write_line(MCDSec* sec, PDFLine* line, MCDLine l) {
 
     }
 
+    // CLP_LAST_NAME max out at 10 bytes with CLP_2
+    // manually filling spaces for the remaining bytes
+    if (l == MCD_LINE_CLP_2) {
+
+        const MCDCol col = MCD_COL_CLP_LAST_NAME;
+
+        uint8_t offset = sec->offset[col];
+        size_t n_bytes = sec->offset[col + 1] - offset;
+        uint8_t* start = sec->buffer + offset;
+
+        memset(start + 10, ' ', n_bytes - 10);
+
+    }
+
     if (mcd_line_format[l][FWF_OUT]) {
         
         sec->n_rows++;
