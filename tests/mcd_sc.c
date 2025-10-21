@@ -127,20 +127,22 @@ static const uint8_t mcd_line_format[][8] = {
 
 static void mcd_write_sec(MCDSec* sec) {
 
-    uint8_t n = sec->offset[MCD_COL_ZZZ] + 1;
-
     for (uint8_t i = 1; i <= sec->n_rows; i++) {
 
         const uint8_t* cur = sec->buffer + MCD_ROW_SIZE * i;
+        const uint8_t n = sec->offset[MCD_COL_ZZZ] + 1;
+
         fwrite(cur, 1, n, sec->output);
 
     }
 
-    const MCDCol c = MCD_COL_SVC_DETAIL_EOBS;
-    n = sec->offset[c + 1] - sec->offset[c];
-    uint8_t* dest = sec->buffer + sec->offset[c];
+    const MCDCol col = MCD_COL_SVC_DETAIL_EOBS;
 
-    for (uint8_t i = 0; i < n; i++) { dest[i] = ' '; }
+    uint8_t offset = sec->offset[col];
+    size_t n_bytes = sec->offset[col + 1] - offset;
+    uint8_t* start = sec->buffer + offset;
+
+    memset(start, ' ', n_bytes);
     sec->n_rows = 0;
 
 }
@@ -161,6 +163,21 @@ static void mcd_write_line(MCDSec* sec, PDFLine* line, MCDLine l) {
         const uint8_t* start = line->cursor + (f[i] & 0x00ff);
 
         memcpy(sec->buffer + offset, start, n_bytes);
+
+    }
+
+    // CLP_LAST_NAME max out at 10 bytes with CLP_2
+    // manually filling spaces for the remaining bytes
+    if (l == MCD_LINE_CLP_2) {
+
+        const MCDCol col = MCD_COL_CLP_LAST_NAME;
+
+        uint8_t offset = sec->offset[col];
+        size_t n_bytes = sec->offset[col + 1] - offset;
+        uint8_t* start = sec->buffer + offset;
+
+        // Field must have at least 10 bytes allocated space
+        memset(start + 10, ' ', n_bytes - 10);
 
     }
 
