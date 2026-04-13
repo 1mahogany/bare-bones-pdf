@@ -20,7 +20,7 @@
 
 #define MCD_FMT_BPR_1                       \
 {                                           \
-    (MCD_COL_BPR_PAYEE        << 8) + 0x08, \
+    (MCD_COL_BPR_PAYEE        << 8) + 0x07, \
     (MCD_COL_BPR_CHECK_NUMBER << 8) + 0x26, \
     (MCD_COL_ZZZ              << 8) + 0xff, \
 }
