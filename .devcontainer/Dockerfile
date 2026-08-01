@@ -19,13 +19,13 @@
 FROM debian:trixie-slim
 
 RUN <<EOF
-    groupadd --gid 1000 pdf
-    useradd --gid 1000 --uid 1000 -m pdf
-    apt-get update
-    apt-get -y upgrade
-    apt-get -y install gcc gdb git make zlib1g-dev
-    apt-get -y autoremove
-    apt-get clean
+    groupadd --gid 1000 dev
+    useradd --gid 1000 --uid 1000 -m -s /usr/bin/bash dev
+    apt update
+    apt upgrade -y
+    apt install gcc gdb git make zlib1g-dev -y
+    apt autoremove -y
+    apt clean
 EOF
 
-USER pdf
+USER dev

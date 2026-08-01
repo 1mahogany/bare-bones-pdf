@@ -274,6 +274,14 @@ int parse_mcd_ar(PDFFile* pdf, FILE* out) {
     PDFPage* page = NULL;
     MCDRow* row = MCD_ROW_AUTO(out);
 
+    if (pdf == NULL) {
+
+        // output the header row and exit
+        fwrite(row->buffer, 1, MCD_ROW_SIZE, out);
+        return 0;
+
+    }
+
     while (pdf_next_page(pdf, &page) == PDF_OK)
         mcd_parse_page(row, page);
 

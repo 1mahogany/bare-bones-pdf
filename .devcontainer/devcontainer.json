@@ -1,16 +1,19 @@
 {
     "name": "bare-bones-pdf",
-    "remoteUser": "pdf",
+    "remoteUser": "dev",
     "updateRemoteUserUID": true,
     "build": {
         "dockerfile": "Dockerfile",
         "context": ".."
     },
-    "workspaceMount": "source=${localWorkspaceFolder},target=/home/pdf/bare-bones-pdf,type=bind",
-    "workspaceFolder": "/home/pdf/bare-bones-pdf",
+    "workspaceMount": "source=${localWorkspaceFolder},target=/home/dev/bare-bones-pdf,type=bind",
+    "workspaceFolder": "/home/dev/bare-bones-pdf",
     "customizations": {
         "vscode": {
-            "extensions": ["ms-vscode.cpptools"],
+            "extensions": [
+                "ms-vscode.cpptools",
+                "ms-azuretools.vscode-containers"
+            ],
             "settings": {
                 "files.associations": {
                     "*.c": "c",

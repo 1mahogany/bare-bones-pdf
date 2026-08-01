@@ -246,6 +246,16 @@ int parse_mcd_sc(PDFFile* pdf, FILE* out) {
     PDFPage* page = NULL;
     PDFLine* line = NULL;
     MCDSec* sec = MCD_SEC_AUTO(out);
+
+    if (pdf == NULL) {
+
+        // output the header row and exit
+        // include 1 extra byte for the line break
+        const size_t n = sec->offset[MCD_COL_ZZZ] + 1;
+        fwrite(sec->buffer, 1, n, out);
+        return 0;
+
+    }
     
     while (pdf_next_page(pdf, &page) == PDF_OK)
         while (pdf_next_line(page, &line) == PDF_OK)
