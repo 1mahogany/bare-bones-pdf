@@ -16,6 +16,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#define _XOPEN_SOURCE 700 // POSIX.1-2008
+#define USE_FD 8 // nftw file descriptors
+
+#include <ftw.h>
 #include <getopt.h>
 
 #include "parser.h"
@@ -23,11 +27,25 @@
 #include "mcd_ms.h"
 #include "mcd_sc.h"
 
-static int pdf_parse_file(char* file, PDFParser* p) {
+static PDFParser* p = NULL;
+
+static int pdf_parse_file(
+    const char* filename,
+	const struct stat* status,
+    int flag,
+	struct FTW* info
+) {
+    if (flag == FTW_F) {
+
+        // silence compiler errors
+        (void)status;
+        (void)info;
+
+    } else { return EXIT_SUCCESS; }
 
     PDFFile* pdf = PDF_FILE_INIT();
 
-    if (pdf_read_file(pdf, file) != PDF_OK) {
+    if (pdf_read_file(pdf, filename) != PDF_OK) {
 
         printf("read pdf failed\n");
         PDF_FILE_FREE(pdf);
@@ -40,12 +58,10 @@ static int pdf_parse_file(char* file, PDFParser* p) {
         return EXIT_SUCCESS;
 
     }
-
 }
 
 int main(int argc, char** argv) {
 
-    PDFParser* p = NULL;
     int opt = 0;
 
     while ((opt = getopt(argc, argv, "p:")) != -1) {
@@ -61,7 +77,7 @@ int main(int argc, char** argv) {
             break;
 
         default:
-            printf("usage: %s -p parser file\n", argv[0]);
+            printf("usage: %s -p parser path\n", argv[0]);
             return EXIT_FAILURE;
 
         }
@@ -75,9 +91,14 @@ int main(int argc, char** argv) {
         
     } else if (optind >= argc) {
 
-        printf("missing input file\n");
+        printf("missing input path\n");
         return EXIT_FAILURE;
 
-    } else { return pdf_parse_file(argv[optind], p); }
+    } else { 
+        
+        p(NULL, stdout);
+        return nftw(argv[optind], pdf_parse_file, USE_FD, 0);
+    
+    }
 
 }
